@@ -96,7 +96,7 @@ export class UsersService {
     return updatedUser;
   }
 
-  remove(userId: string, userToBeDeletedId: string) {
+  async remove(userId: string, userToBeDeletedId: string) {
     if (userId !== userToBeDeletedId) {
       throw new HttpException(
         'You are not allowed to delete this user',
@@ -104,6 +104,12 @@ export class UsersService {
       );
     }
 
-    return this.userModel.findByIdAndRemove(userToBeDeletedId);
+    const deletedUser = await this.userModel.findByIdAndRemove(
+      userToBeDeletedId,
+    );
+
+    deletedUser.passwordHash = null;
+
+    return deletedUser;
   }
 }
