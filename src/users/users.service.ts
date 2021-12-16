@@ -5,6 +5,7 @@ import { hash } from 'bcryptjs';
 
 import { User, UserDocument } from './schemas/user.schema';
 import { CreateUserDto } from './dto/create-user.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
 
 @Injectable()
 export class UsersService {
@@ -30,11 +31,69 @@ export class UsersService {
       ...restUserData,
     });
 
-    return createdUser.save();
+    await createdUser.save();
+
+    createdUser.passwordHash = null;
+
+    return createdUser;
   }
 
   findByEmail(email: string) {
     return this.userModel.findOne({ email });
+  }
+
+  async findById(userId: string) {
+    const user = await this.userModel.findById(userId);
+
+    user.passwordHash = null;
+
+    return user;
+  }
+
+  async update(userId: string, userToBeUpdatedId: string, user: UpdateUserDto) {
+    if (userId !== userToBeUpdatedId) {
+      throw new HttpException(
+        'You are not allowed to update this user',
+        HttpStatus.FORBIDDEN,
+      );
+    }
+
+    const userEmail = user.email;
+
+    if (userEmail) {
+      const hasUserWithSameEmail = await this.findByEmail(userEmail);
+
+      if (hasUserWithSameEmail) {
+        throw new HttpException(
+          'User with this email already exists',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+    }
+
+    const userPassword = user.password;
+    let passwordHash = null;
+
+    if (userPassword) {
+      const hashedPassword = await hash(userPassword, 8);
+
+      passwordHash = hashedPassword;
+    }
+
+    const updatedUser = await this.userModel.findByIdAndUpdate(
+      userId,
+      {
+        $set: {
+          ...user,
+          ...(passwordHash ? { passwordHash } : {}),
+        },
+      },
+      { new: true },
+    );
+
+    updatedUser.passwordHash = null;
+
+    return updatedUser;
   }
 
   remove(userId: string, userToBeDeletedId: string) {
