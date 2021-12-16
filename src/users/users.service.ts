@@ -36,4 +36,15 @@ export class UsersService {
   findByEmail(email: string) {
     return this.userModel.findOne({ email });
   }
+
+  remove(userId: string, userToBeDeletedId: string) {
+    if (userId !== userToBeDeletedId) {
+      throw new HttpException(
+        'You are not allowed to delete this user',
+        HttpStatus.FORBIDDEN,
+      );
+    }
+
+    return this.userModel.findByIdAndRemove(userToBeDeletedId);
+  }
 }
