@@ -2,6 +2,7 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
+import { LikesService } from '../likes/likes.service';
 import { Recipe, RecipeDocument } from './schemas/recipe.schema';
 import { CreateRecipeDto } from './dto/create-recipe.dto';
 import { UpdateRecipeDto } from './dto/update-recipe-dto';
@@ -10,6 +11,7 @@ import { UpdateRecipeDto } from './dto/update-recipe-dto';
 export class RecipesService {
   constructor(
     @InjectModel(Recipe.name) private recipeModel: Model<RecipeDocument>,
+    private readonly likesService: LikesService,
   ) {}
 
   create(createRecipeDto: CreateRecipeDto) {
@@ -17,7 +19,11 @@ export class RecipesService {
   }
 
   async update(userId: string, recipeId: string, recipe: UpdateRecipeDto) {
-    const recipeToBeUpdated = await this.findById(recipeId);
+    const recipeToBeUpdated = await this.recipeModel.findById(recipeId);
+
+    if (!recipeToBeUpdated) {
+      throw new HttpException('Recipe not found', HttpStatus.NOT_FOUND);
+    }
 
     const recipeOwner = recipeToBeUpdated.author._id.toString();
 
@@ -61,11 +67,17 @@ export class RecipesService {
       throw new HttpException('Recipe not found', HttpStatus.NOT_FOUND);
     }
 
-    return recipe;
+    const likes = await this.likesService.findAllByRecipe(recipeId);
+
+    return Object.assign(recipe.toObject(), { likes: likes.length });
   }
 
   async remove(userId: string, recipeId: string) {
-    const recipeToBeRemoved = await this.findById(recipeId);
+    const recipeToBeRemoved = await this.recipeModel.findById(recipeId);
+
+    if (!recipeToBeRemoved) {
+      throw new HttpException('Recipe not found', HttpStatus.NOT_FOUND);
+    }
 
     const recipeOwner = recipeToBeRemoved.author._id.toString();
 
@@ -76,6 +88,23 @@ export class RecipesService {
       );
     }
 
-    await recipeToBeRemoved.remove();
+    await Promise.all([
+      recipeToBeRemoved.remove(),
+      this.likesService.removeAllByRecipe(recipeId),
+    ]);
+  }
+
+  async createLike(userId: string, recipeId: string) {
+    const doesRecipeExist = await this.recipeModel.exists({ _id: recipeId });
+
+    if (!doesRecipeExist) {
+      throw new HttpException('Recipe not found', HttpStatus.NOT_FOUND);
+    }
+
+    return this.likesService.create({ owner: userId, recipe: recipeId });
+  }
+
+  removeLike(userId: string, recipeId: string) {
+    return this.likesService.remove(userId, recipeId);
   }
 }

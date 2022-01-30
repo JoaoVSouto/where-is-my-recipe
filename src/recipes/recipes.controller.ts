@@ -56,4 +56,16 @@ export class RecipesController {
   remove(@Request() req, @Param('id') id: string) {
     return this.recipesService.remove(req.user.id, id);
   }
+
+  @UseGuards(JwtAuthGuard)
+  @Post(':id/likes')
+  createLike(@Request() req, @Param('id') id: string) {
+    return this.recipesService.createLike(req.user.id, id);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Delete(':id/likes')
+  removeLike(@Request() req, @Param('id') id: string) {
+    return this.recipesService.removeLike(req.user.id, id);
+  }
 }
