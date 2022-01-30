@@ -1,10 +1,8 @@
 {
   "name": "where-is-recipe-app",
   "version": "0.0.1",
-  "description": "",
-  "author": "",
-  "private": true,
-  "license": "UNLICENSED",
+  "description": "Search your favorite and explore new recipes!",
+  "license": "MIT",
   "scripts": {
     "prebuild": "rimraf dist",
     "build": "nest build",
