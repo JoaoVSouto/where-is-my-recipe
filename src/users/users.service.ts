@@ -104,12 +104,6 @@ export class UsersService {
       );
     }
 
-    const deletedUser = await this.userModel.findByIdAndRemove(
-      userToBeDeletedId,
-    );
-
-    deletedUser.passwordHash = null;
-
-    return deletedUser;
+    await this.userModel.findByIdAndRemove(userToBeDeletedId);
   }
 }
