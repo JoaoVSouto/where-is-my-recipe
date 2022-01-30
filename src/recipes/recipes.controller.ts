@@ -12,7 +12,7 @@ import {
 
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RecipesService } from './recipes.service';
-import { CreateRecipeDto } from './dto/create-recipe.dto';
+import { CreateRecipeWithoutAuthorDto } from './dto/create-recipe.dto';
 import { UpdateRecipeDto } from './dto/update-recipe-dto';
 
 @Controller('recipes')
@@ -23,7 +23,7 @@ export class RecipesController {
   @Post()
   create(
     @Request() req,
-    @Body() createRecipeDto: Omit<CreateRecipeDto, 'author'>,
+    @Body() createRecipeDto: CreateRecipeWithoutAuthorDto,
   ) {
     return this.recipesService.create({
       ...createRecipeDto,

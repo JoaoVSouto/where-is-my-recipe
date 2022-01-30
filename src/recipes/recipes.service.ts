@@ -61,7 +61,7 @@ export class RecipesService {
   async findById(recipeId: string) {
     const recipe = await this.recipeModel
       .findById(recipeId)
-      .populate('author', 'name');
+      .populate('author', 'name -_id');
 
     if (!recipe) {
       throw new HttpException('Recipe not found', HttpStatus.NOT_FOUND);
