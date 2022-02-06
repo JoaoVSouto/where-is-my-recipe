@@ -6,12 +6,14 @@ import { LikesService } from '../likes/likes.service';
 import { Recipe, RecipeDocument } from './schemas/recipe.schema';
 import { CreateRecipeDto } from './dto/create-recipe.dto';
 import { UpdateRecipeDto } from './dto/update-recipe-dto';
+import { CommentsService } from '../comments/comments.service';
 
 @Injectable()
 export class RecipesService {
   constructor(
     @InjectModel(Recipe.name) private recipeModel: Model<RecipeDocument>,
-    private readonly likesService: LikesService,
+    private readonly likesService: LikesService, 
+    private readonly commentsService: CommentsService,
   ) {}
 
   create(createRecipeDto: CreateRecipeDto) {
@@ -67,9 +69,10 @@ export class RecipesService {
       throw new HttpException('Recipe not found', HttpStatus.NOT_FOUND);
     }
 
+    const comments = await this.commentsService.findAllByRecipe(recipeId);
     const likes = await this.likesService.findAllByRecipe(recipeId);
 
-    return Object.assign(recipe.toObject(), { likes: likes.length });
+    return Object.assign(recipe.toObject(), { likes: likes.length ,comments});
   }
 
   async remove(userId: string, recipeId: string) {
@@ -91,6 +94,7 @@ export class RecipesService {
     await Promise.all([
       recipeToBeRemoved.remove(),
       this.likesService.removeAllByRecipe(recipeId),
+      this.commentsService.removeAllByRecipe(recipeId),
     ]);
   }
 
@@ -106,5 +110,36 @@ export class RecipesService {
 
   removeLike(userId: string, recipeId: string) {
     return this.likesService.remove(userId, recipeId);
+  }
+
+  async createComment(userId: string, recipeId:string, description:string){
+    const doesRecipeExist = await this.recipeModel.exists({ _id: recipeId });
+    if (!doesRecipeExist) {
+      throw new HttpException('Recipe not found', HttpStatus.NOT_FOUND);
+    }
+
+    return this.commentsService.create({ author: userId, recipe: recipeId, description:description });
+  }
+  async removeComment(userId:string, recipeId:string, commentId:string){
+    const doesRecipeExist = await this.recipeModel.exists({ _id: recipeId });
+    if (!doesRecipeExist) {
+      throw new HttpException('Recipe not found', HttpStatus.NOT_FOUND);
+    }
+    const comment = await this.commentsService.findById(commentId)
+    if(comment.recipe._id.toString() !== recipeId){
+      throw new HttpException('Comment not found on this recipe', HttpStatus.NOT_FOUND);
+    }
+    return this.commentsService.remove(userId, commentId);
+  }
+  async updateComment(userId:string, recipeId:string, commentId:string, description: string){
+    const doesRecipeExist = await this.recipeModel.exists({ _id: recipeId });
+    if (!doesRecipeExist) {
+      throw new HttpException('Recipe not found', HttpStatus.NOT_FOUND);
+    }
+    const comment = await this.commentsService.findById(commentId)
+    if(comment.recipe._id.toString() !== recipeId){
+      throw new HttpException('Comment not found on this recipe', HttpStatus.NOT_FOUND);
+    }
+    return this.commentsService.update(userId, commentId, { author: userId, recipe: recipeId, description:description });
   }
 }
