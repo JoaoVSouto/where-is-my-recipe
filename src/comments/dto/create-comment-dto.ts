@@ -1,17 +1,18 @@
-import {IsMongoId, IsString, IsNotEmpty} from 'class-validator';
-export class CreateCommentDto{
-    @IsString()
-    @IsNotEmpty()
-    description:string;
+import { IsMongoId, IsString, IsNotEmpty } from 'class-validator';
 
-    @IsMongoId()
-    author: string;
+export class CreateCommentDto {
+  @IsString()
+  @IsNotEmpty()
+  description: string;
 
-    @IsMongoId()
-    recipe: string;
+  @IsMongoId()
+  author: string;
+
+  @IsMongoId()
+  recipe: string;
 }
-export class ReceiveCommmentDto{
-    @IsString()
-    @IsNotEmpty()
-    description:string;
+export class ReceiveCommmentDto {
+  @IsString()
+  @IsNotEmpty()
+  description: string;
 }

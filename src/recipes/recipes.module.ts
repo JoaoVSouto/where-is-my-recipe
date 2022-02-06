@@ -10,7 +10,8 @@ import { RecipesService } from './recipes.service';
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: Recipe.name, schema: RecipeSchema }]),
-    LikesModule, CommentsModule,
+    LikesModule,
+    CommentsModule,
   ],
   controllers: [RecipesController],
   providers: [RecipesService],

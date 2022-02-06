@@ -4,10 +4,10 @@ import { CommentsService } from './comments.service';
 import { Comment, CommentSchema } from './schemas/comment.schema';
 
 @Module({
-    imports:[
-        MongooseModule.forFeature([{name: Comment.name, schema:CommentSchema}]),
-    ],
-    providers: [CommentsService],
-    exports: [CommentsService],
+  imports: [
+    MongooseModule.forFeature([{ name: Comment.name, schema: CommentSchema }]),
+  ],
+  providers: [CommentsService],
+  exports: [CommentsService],
 })
-export class CommentsModule{}
+export class CommentsModule {}

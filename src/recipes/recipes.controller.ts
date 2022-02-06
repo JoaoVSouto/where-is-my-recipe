@@ -14,7 +14,7 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RecipesService } from './recipes.service';
 import { CreateRecipeWithoutAuthorDto } from './dto/create-recipe.dto';
 import { UpdateRecipeDto } from './dto/update-recipe-dto';
-import { CreateCommentDto, ReceiveCommmentDto } from 'src/comments/dto/create-comment-dto';
+import { ReceiveCommmentDto } from 'src/comments/dto/create-comment-dto';
 
 @Controller('recipes')
 export class RecipesController {
@@ -72,18 +72,40 @@ export class RecipesController {
 
   @UseGuards(JwtAuthGuard)
   @Post(':id/comment')
-  createComment(@Request() req, @Param('id') id: string, @Body() receiveCommentDto:ReceiveCommmentDto) {
-    return this.recipesService.createComment(req.user.id, id, receiveCommentDto.description);
+  createComment(
+    @Request() req,
+    @Param('id') id: string,
+    @Body() receiveCommentDto: ReceiveCommmentDto,
+  ) {
+    return this.recipesService.createComment(
+      req.user.id,
+      id,
+      receiveCommentDto.description,
+    );
   }
 
   @UseGuards(JwtAuthGuard)
   @Delete(':recipeId/comment/:commentId')
-  removeComment(@Request() req, @Param('recipeId') recipeId: string, @Param('commentId')commentId: string) {
+  removeComment(
+    @Request() req,
+    @Param('recipeId') recipeId: string,
+    @Param('commentId') commentId: string,
+  ) {
     return this.recipesService.removeComment(req.user.id, recipeId, commentId);
   }
   @UseGuards(JwtAuthGuard)
   @Patch(':recipeId/comment/:commentId')
-  updateComment(@Request() req, @Param('recipeId') recipeId: string, @Param('commentId')commentId: string, @Body() receiveCommentDto:ReceiveCommmentDto) {
-    return this.recipesService.updateComment(req.user.id, recipeId, commentId, receiveCommentDto.description);
+  updateComment(
+    @Request() req,
+    @Param('recipeId') recipeId: string,
+    @Param('commentId') commentId: string,
+    @Body() receiveCommentDto: ReceiveCommmentDto,
+  ) {
+    return this.recipesService.updateComment(
+      req.user.id,
+      recipeId,
+      commentId,
+      receiveCommentDto.description,
+    );
   }
 }
