@@ -69,8 +69,10 @@ export class RecipesService {
       throw new HttpException('Recipe not found', HttpStatus.NOT_FOUND);
     }
 
-    const comments = await this.commentsService.findAllByRecipe(recipeId);
-    const likes = await this.likesService.findAllByRecipe(recipeId);
+    const [comments, likes] = await Promise.all([
+       this.commentsService.findAllByRecipe(recipeId),
+       this.likesService.findAllByRecipe(recipeId)
+    ]);
 
     return Object.assign(recipe.toObject(), { likes: likes.length, comments });
   }
@@ -114,6 +116,7 @@ export class RecipesService {
 
   async createComment(userId: string, recipeId: string, description: string) {
     const doesRecipeExist = await this.recipeModel.exists({ _id: recipeId });
+
     if (!doesRecipeExist) {
       throw new HttpException('Recipe not found', HttpStatus.NOT_FOUND);
     }
@@ -121,21 +124,25 @@ export class RecipesService {
     return this.commentsService.create({
       author: userId,
       recipe: recipeId,
-      description: description,
+      description,
     });
   }
   async removeComment(userId: string, recipeId: string, commentId: string) {
     const doesRecipeExist = await this.recipeModel.exists({ _id: recipeId });
+
     if (!doesRecipeExist) {
       throw new HttpException('Recipe not found', HttpStatus.NOT_FOUND);
     }
+
     const comment = await this.commentsService.findById(commentId);
+
     if (comment.recipe._id.toString() !== recipeId) {
       throw new HttpException(
         'Comment not found on this recipe',
         HttpStatus.NOT_FOUND,
       );
     }
+
     return this.commentsService.remove(userId, commentId);
   }
   async updateComment(
@@ -145,20 +152,24 @@ export class RecipesService {
     description: string,
   ) {
     const doesRecipeExist = await this.recipeModel.exists({ _id: recipeId });
+
     if (!doesRecipeExist) {
       throw new HttpException('Recipe not found', HttpStatus.NOT_FOUND);
     }
+
     const comment = await this.commentsService.findById(commentId);
+
     if (comment.recipe._id.toString() !== recipeId) {
       throw new HttpException(
         'Comment not found on this recipe',
         HttpStatus.NOT_FOUND,
       );
     }
+
     return this.commentsService.update(userId, commentId, {
       author: userId,
       recipe: recipeId,
-      description: description,
+      description,
     });
   }
 }
