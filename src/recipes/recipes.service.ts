@@ -70,8 +70,10 @@ export class RecipesService {
     }
 
     const [comments, likes] = await Promise.all([
-       this.commentsService.findAllByRecipe(recipeId),
-       this.likesService.findAllByRecipe(recipeId)
+      this.commentsService
+        .findAllByRecipe(recipeId)
+        .populate('author', 'name -_id'),
+      this.likesService.findAllByRecipe(recipeId),
     ]);
 
     return Object.assign(recipe.toObject(), { likes: likes.length, comments });
