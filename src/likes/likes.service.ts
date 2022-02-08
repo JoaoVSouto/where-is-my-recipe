@@ -29,6 +29,10 @@ export class LikesService {
     return this.likeModel.find({ recipe: recipeId });
   }
 
+  findAll() {
+    return this.likeModel.find();
+  }
+
   async remove(userId: string, recipeId: string) {
     const likes = await this.findAllByRecipe(recipeId);
 

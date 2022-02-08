@@ -6,6 +6,7 @@ import { LikesService } from '../likes/likes.service';
 import { Recipe, RecipeDocument } from './schemas/recipe.schema';
 import { CreateRecipeDto } from './dto/create-recipe.dto';
 import { UpdateRecipeDto } from './dto/update-recipe-dto';
+import { IndexRecipeDto } from './dto/index-recipe.dto';
 import { CommentsService } from '../comments/comments.service';
 
 @Injectable()
@@ -52,12 +53,47 @@ export class RecipesService {
     );
   }
 
-  findAll() {
-    return this.recipeModel
+  async findAll(indexRecipeDto: IndexRecipeDto) {
+    const { sort = 'asc', orderBy } = indexRecipeDto;
+
+    const likes = (await this.likesService.findAll()).map(like =>
+      like.recipe.toString(),
+    );
+
+    const likesCountByRecipeId = likes.reduce((acc, curr) => {
+      if (acc[curr]) {
+        acc[curr] += 1;
+      } else {
+        acc[curr] = 1;
+      }
+
+      return acc;
+    }, {});
+
+    const rawRecipes = await this.recipeModel
       .find()
-      .sort('-createdAt')
+      .sort(orderBy ? `${sort === 'asc' ? '' : '-'}${orderBy}` : '-createdAt')
       .populate('author', 'name -_id')
       .select('title preparationTime servings createdAt');
+
+    const recipes = rawRecipes
+      .map(recipe => recipe.toObject())
+      .map(recipe => ({
+        ...recipe,
+        likes: likesCountByRecipeId[recipe._id.toString()] ?? 0,
+      }));
+
+    if (orderBy === 'likes') {
+      recipes.sort((a, b) => {
+        if (sort === 'asc') {
+          return a.likes - b.likes;
+        }
+
+        return b.likes - a.likes;
+      });
+    }
+
+    return recipes;
   }
 
   async findById(recipeId: string) {

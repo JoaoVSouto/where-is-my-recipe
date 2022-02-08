@@ -6,6 +6,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   Request,
   UseGuards,
 } from '@nestjs/common';
@@ -14,6 +15,7 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RecipesService } from './recipes.service';
 import { CreateRecipeWithoutAuthorDto } from './dto/create-recipe.dto';
 import { UpdateRecipeDto } from './dto/update-recipe-dto';
+import { IndexRecipeDto } from './dto/index-recipe.dto';
 import { ReceiveCommmentDto } from 'src/comments/dto/create-comment-dto';
 
 @Controller('recipes')
@@ -43,8 +45,8 @@ export class RecipesController {
   }
 
   @Get()
-  index() {
-    return this.recipesService.findAll();
+  index(@Query() indexRecipeDto: IndexRecipeDto) {
+    return this.recipesService.findAll(indexRecipeDto);
   }
 
   @Get(':id')
