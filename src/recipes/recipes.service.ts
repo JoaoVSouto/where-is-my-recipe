@@ -54,7 +54,7 @@ export class RecipesService {
   }
 
   async findAll(indexRecipeDto: IndexRecipeDto) {
-    const { sort = 'asc', orderBy } = indexRecipeDto;
+    const { sort = 'asc', orderBy, title = '' } = indexRecipeDto;
 
     const likes = (await this.likesService.findAll()).map(like =>
       like.recipe.toString(),
@@ -71,7 +71,9 @@ export class RecipesService {
     }, {});
 
     const rawRecipes = await this.recipeModel
-      .find()
+      .find({
+        title: { $regex: title, $options: 'i' },
+      })
       .sort(orderBy ? `${sort === 'asc' ? '' : '-'}${orderBy}` : '-createdAt')
       .populate('author', 'name -_id')
       .select('title preparationTime servings createdAt');
