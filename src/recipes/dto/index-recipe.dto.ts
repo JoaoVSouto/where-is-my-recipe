@@ -2,7 +2,7 @@ import { IsOptional, IsString, Matches } from 'class-validator';
 
 export class IndexRecipeDto {
   @IsOptional()
-  @Matches(/^title|likes|createdAt$/i)
+  @Matches(/^title|likes|preparationTime|createdAt$/i)
   orderBy: string;
 
   @IsOptional()
